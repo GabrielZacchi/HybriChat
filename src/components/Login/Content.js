@@ -8,6 +8,7 @@ import IconButton from "@material-ui/core/IconButton";
 import Link from "@material-ui/core/Link";
 import { BrowserView, MobileView } from "react-device-detect";
 import logo from "../../assets/hybri.png";
+import back from "../../assets/back.png";
 import GoogleButton from "react-google-button";
 import Carregando from "../carregando";
 
@@ -174,7 +175,14 @@ const LoginContent = (props) => {
               </Grid>
             </Grid>
           </MobileView>
-          <BrowserView style={{ backgroundColor: "#36393f" }}>
+          <BrowserView
+            style={{
+              backgroundColor: "#f1e2ff",
+              backgroundImage: `url(${back})`,
+              backgroundPosition: 'right',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
             <Grid
               container
               spacing={0}
