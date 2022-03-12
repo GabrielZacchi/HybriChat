@@ -7,10 +7,12 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import IconButton from "@material-ui/core/IconButton";
 import Link from "@material-ui/core/Link";
 import { BrowserView, MobileView } from "react-device-detect";
-import logo from "../../assets/hybri.png";
-import back from "../../assets/back.png";
 import GoogleButton from "react-google-button";
 import Carregando from "../carregando";
+
+import logo from "../../assets/hybri.png";
+import back from "../../assets/back.png";
+import astronauta from "../../assets/astronauta.png";
 
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
@@ -178,8 +180,8 @@ const LoginContent = (props) => {
           <BrowserView
             style={{
               backgroundColor: "#f1e2ff",
-              backgroundImage: `url(${back})`,
-              backgroundPosition: 'right',
+              backgroundImage: `url(${back}), url(${astronauta})`,
+              backgroundPosition: 'right, left bottom',
               backgroundRepeat: 'no-repeat'
             }}
           >
