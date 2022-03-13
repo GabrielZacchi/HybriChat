@@ -1,10 +1,10 @@
 import React from 'react';
-import { Route, Navigate } from 'react-router-dom';
-import { auth } from './firebase';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import { Navigate } from 'react-router-dom';
+import { useSelector } from "react-redux";
+import { selectUser } from "./Redux/userSlice";
 
 function PrivateRoute({ children }) {
-    const [user, loading, error] = useAuthState(auth);
+    const user = useSelector(selectUser);
     return user ? children : <Navigate to="/login" />
 }
 
