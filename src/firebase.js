@@ -17,7 +17,7 @@ import {
   addDoc,
 } from "firebase/firestore";
 
-import VerifyErroCode from './components/traduzirErros';
+import VerifyErroCode from "./components/traduzirErros";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBoX6eSuRA4xSZ-ZNxJ3hMDSP7fGQ0IMfo",
@@ -49,14 +49,27 @@ const signInWithGoogle = async () => {
     console.error(err);
   }
 };
-const logInWithEmailAndPassword = async (email, password) => {
+const logInWithEmailAndPassword = async (email, password, setResponse) => {
   try {
     await signInWithEmailAndPassword(auth, email, password);
+    setResponse({
+      status: 200,
+      message: "Sucesso!",
+    });
   } catch (err) {
     console.error(err);
+    setResponse({
+      status: 400,
+      message: VerifyErroCode(err.code),
+    });
   }
 };
-const registerWithEmailAndPassword = async (name, email, password, setResponse) => {
+const registerWithEmailAndPassword = async (
+  name,
+  email,
+  password,
+  setResponse
+) => {
   try {
     const res = await createUserWithEmailAndPassword(auth, email, password);
     const user = res.user;
@@ -68,23 +81,30 @@ const registerWithEmailAndPassword = async (name, email, password, setResponse) 
     });
     setResponse({
       status: 200,
-      message: 'Sucesso!'
-    })
+      message: "Sucesso!",
+    });
   } catch (err) {
     console.error(err);
     setResponse({
       status: 400,
-      message: VerifyErroCode(err.code)
+      message: VerifyErroCode(err.code),
     });
   }
 };
 
-const sendPasswordReset = async (email) => {
+const sendPasswordReset = async (email, setResponse) => {
   try {
     await sendPasswordResetEmail(auth, email);
-    alert("Password reset link sent!");
+    setResponse({
+      status: 200,
+      message: "Sucesso!",
+    });
   } catch (err) {
     console.error(err);
+    setResponse({
+      status: 400,
+      message: VerifyErroCode(err.code),
+    });
   }
 };
 const logout = () => {

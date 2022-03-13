@@ -9,6 +9,7 @@ import Link from "@material-ui/core/Link";
 import { BrowserView, MobileView } from "react-device-detect";
 import GoogleButton from "react-google-button";
 import Carregando from "../carregando";
+import ModalAlerta from "../modalAlerta";
 
 import logo from "../../assets/hybri.png";
 import back from "../../assets/back.png";
@@ -29,16 +30,34 @@ const LoginContent = (props) => {
   const [mensagem, setMensagem] = useState("");
   const [open, setOpen] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-  const [user, loading, error] = useAuthState(auth);
+  const [user, loadingAuth, error] = useAuthState(auth);
+  const [clicked, setClicked] = useState(false);
+  const [response, setResponse] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
+  const login = () => {
+    setLoading(true);
+    setClicked(true);
+    logInWithEmailAndPassword(email, password, setResponse);
+  };
+
   useEffect(() => {
-    if (loading) {
-      return;
-    }
+    if (loadingAuth) return;
     if (user) navigate("/");
-  }, [user, loading]);
+  }, [user, loadingAuth]);
+
+  useEffect(() => {
+    setLoading(false);
+    if (response.status === 400) {
+      if (response.message) {
+        setTitulo("Erro");
+        setMensagem(response.message);
+        handleOpen();
+      }
+    }
+  }, [response]);
 
   const handleEmail = (event) => {
     setEmail(event.target.value);
@@ -56,18 +75,12 @@ const LoginContent = (props) => {
     event.preventDefault();
   };
 
-  const handleOpen = (motivo) => {
-    if (motivo === "erroLogin") {
-      setTitulo("Erro Login");
-      setMensagem("Email ou Senha Inválidos.");
-      setOpen(true);
-    }
+  const handleOpen = () => {
+    setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
-    localStorage.removeItem("erroLogin");
-    window.location.reload();
   };
 
   const paperStyle = {
@@ -78,7 +91,7 @@ const LoginContent = (props) => {
   };
   return (
     <React.Fragment>
-      {!loading ? (
+      {!loading && !loadingAuth ? (
         <div style={{ flexGrow: 1 }}>
           <MobileView style={{ padding: 20 }}>
             <Grid
@@ -96,6 +109,10 @@ const LoginContent = (props) => {
                   <TextField
                     label="Email"
                     type="email"
+                    error={clicked ? (email ? false : true) : false}
+                    helperText={
+                      clicked ? (email ? "" : "Por favor, digite o email") : ""
+                    }
                     fullWidth
                     value={email}
                     required
@@ -108,11 +125,12 @@ const LoginContent = (props) => {
                     type={showPwd ? "text" : "password"}
                     fullWidth
                     value={password}
+                    error={clicked ? (password ? false : true) : false}
                     required
                     onChange={(e) => handlePassword(e)}
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
-                        logInWithEmailAndPassword(email, password);
+                        login();
                       }
                     }}
                     helperText={
@@ -146,7 +164,7 @@ const LoginContent = (props) => {
                     type="submit"
                     color="primary"
                     variant="contained"
-                    onClick={() => logInWithEmailAndPassword(email, password)}
+                    onClick={() => login()}
                     fullWidth
                   >
                     Entrar
@@ -181,8 +199,8 @@ const LoginContent = (props) => {
             style={{
               backgroundColor: "#f1e2ff",
               backgroundImage: `url(${back}), url(${astronauta})`,
-              backgroundPosition: 'right, left bottom',
-              backgroundRepeat: 'no-repeat'
+              backgroundPosition: "right, left bottom",
+              backgroundRepeat: "no-repeat",
             }}
           >
             <Grid
@@ -202,6 +220,14 @@ const LoginContent = (props) => {
                     <TextField
                       label="Email"
                       type="email"
+                      error={clicked ? (email ? false : true) : false}
+                      helperText={
+                        clicked
+                          ? email
+                            ? ""
+                            : "Por favor, digite o email"
+                          : ""
+                      }
                       fullWidth
                       value={email}
                       required
@@ -214,11 +240,19 @@ const LoginContent = (props) => {
                       type={showPwd ? "text" : "password"}
                       fullWidth
                       value={password}
+                      error={clicked ? (password ? false : true) : false}
+                      helperText={
+                        clicked
+                          ? password
+                            ? ""
+                            : "Por favor, digite a senha"
+                          : ""
+                      }
                       required
                       onChange={(e) => handlePassword(e)}
                       onKeyPress={(e) => {
                         if (e.key === "Enter") {
-                          logInWithEmailAndPassword(email, password);
+                          login();
                         }
                       }}
                       helperText={
@@ -252,7 +286,7 @@ const LoginContent = (props) => {
                       type="submit"
                       color="primary"
                       variant="contained"
-                      onClick={() => logInWithEmailAndPassword(email, password)}
+                      onClick={() => login()}
                       fullWidth
                     >
                       Entrar
@@ -290,6 +324,12 @@ const LoginContent = (props) => {
           <Carregando />
         </div>
       )}
+      <ModalAlerta
+        open={open}
+        handleClose={handleClose}
+        mensagem={mensagem}
+        titulo={titulo}
+      />
     </React.Fragment>
   );
 };

@@ -7,9 +7,13 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import IconButton from "@material-ui/core/IconButton";
 import { BrowserView, MobileView } from "react-device-detect";
-import logo from "../../assets/hybri.png";
-import GoogleButton from "react-google-button";
 import { useAuthState } from "react-firebase-hooks/auth";
+import Carregando from "../carregando";
+import ModalAlerta from "../modalAlerta";
+
+import logo from "../../assets/hybri.png";
+import back from "../../assets/back.png";
+import astronauta from "../../assets/astronauta.png";
 
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
@@ -23,26 +27,40 @@ const RegisterContent = (props) => {
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [name, setName] = useState("");
-  const [user, loading, error] = useAuthState(auth);
+  const [user, loadingAuth, error] = useAuthState(auth);
   const [titulo, setTitulo] = useState("");
   const [mensagem, setMensagem] = useState("");
   const [open, setOpen] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [clicked, setClicked] = useState(false);
-  const [response, setResponse] = useState(false);
+  const [response, setResponse] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const register = () => {
+    setLoading(true);
     setClicked(true);
     registerWithEmailAndPassword(name, email, password, setResponse);
   };
 
   useEffect(() => {
+    if (loadingAuth) return;
+    if (user) navigate("/");
+  }, [user, loadingAuth]);
+
+  useEffect(() => {
+    setLoading(false);
     if (response.status === 200) {
-      alert("Sucesso");
+      setTitulo("Sucesso");
+      setMensagem("Registro realizado com sucesso!");
+      handleOpen();
     } else if (response.status === 400) {
-      alert(response.message);
+      if (response.message) {
+        setTitulo("Erro");
+        setMensagem(response.message);
+        handleOpen();
+      }
     }
   }, [response]);
 
@@ -70,18 +88,13 @@ const RegisterContent = (props) => {
     event.preventDefault();
   };
 
-  const handleOpen = (motivo) => {
-    if (motivo === "erroLogin") {
-      setTitulo("Erro Login");
-      setMensagem("Email ou Senha Inválidos.");
-      setOpen(true);
-    }
+  const handleOpen = () => {
+    setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
-    localStorage.removeItem("erroLogin");
-    window.location.reload();
+    if (response.status === 200) navigate("/");
   };
 
   const paperStyle = {
@@ -93,150 +106,16 @@ const RegisterContent = (props) => {
 
   return (
     <React.Fragment>
-      <div style={{ flexGrow: 1 }}>
-        <MobileView style={{ padding: 20 }}>
-          <Grid
-            container
-            spacing={0}
-            direction="column"
-            alignItems="center"
-            justify="center"
-          >
-            <Grid container spacing={3} align="center" direction="column">
-              <Grid item>
-                <img src={logo} draggable="false" width="180" />
-              </Grid>
-              <Grid item>
-                <TextField
-                  label="Nome"
-                  type="text"
-                  error={clicked ? (name ? false : true) : false}
-                  helperText={
-                    clicked ? (name ? "" : "Por favor, digite o nome") : ""
-                  }
-                  fullWidth
-                  value={name}
-                  required
-                  onChange={(e) => handleName(e)}
-                />
-              </Grid>
-              <Grid item>
-                <TextField
-                  label="Email"
-                  type="email"
-                  error={clicked ? (email ? false : true) : false}
-                  helperText={
-                    clicked ? (email ? "" : "Por favor, digite o email") : ""
-                  }
-                  fullWidth
-                  value={email}
-                  required
-                  onChange={(e) => handleEmail(e)}
-                />
-              </Grid>
-              <Grid item>
-                <TextField
-                  label="Senha"
-                  type={showPwd ? "text" : "password"}
-                  fullWidth
-                  error={clicked ? (password ? false : true) : false}
-                  helperText={
-                    clicked ? (password ? "" : "Por favor, digite a senha") : ""
-                  }
-                  value={password}
-                  required
-                  onChange={(e) => handlePassword(e)}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="tornar senha visivel"
-                          onClick={handleClickShowPassword}
-                          onMouseDown={handleMouseDownPassword}
-                          edge="end"
-                        >
-                          {showPwd ? <VisibilityIcon /> : <VisibilityOffIcon />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-              <Grid item>
-                <TextField
-                  label="Confirmar Senha"
-                  type={showPwd ? "text" : "password"}
-                  error={
-                    clicked
-                      ? password
-                        ? password === passwordConfirm
-                          ? false
-                          : true
-                        : false
-                      : false
-                  }
-                  helperText={
-                    clicked
-                      ? password
-                        ? password === passwordConfirm
-                          ? ""
-                          : "As senhas devem ser iguais!"
-                        : ""
-                      : ""
-                  }
-                  fullWidth
-                  value={passwordConfirm}
-                  required
-                  onChange={(e) => handlePasswordConfirm(e)}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="tornar senha visivel"
-                          onClick={handleClickShowPassword}
-                          onMouseDown={handleMouseDownPassword}
-                          edge="end"
-                        >
-                          {showPwd ? <VisibilityIcon /> : <VisibilityOffIcon />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Grid>
-              <Grid item />
-              <Grid item>
-                <Button
-                  type="submit"
-                  color="primary"
-                  variant="contained"
-                  onClick={() => register()}
-                  fullWidth
-                >
-                  Registrar
-                </Button>
-              </Grid>
-              <Grid item>
-                <div>
-                  {`Já tem uma conta? `}
-                  <Link component={RouterLink} to="/login">
-                    Entrar
-                  </Link>
-                </div>
-              </Grid>
-            </Grid>
-          </Grid>
-        </MobileView>
-        <BrowserView style={{ backgroundColor: "#36393f" }}>
-          <Grid
-            container
-            spacing={0}
-            direction="column"
-            alignItems="center"
-            justify="center"
-            style={{ minHeight: "100vh" }}
-          >
-            <Paper elevation={10} style={paperStyle}>
+      {!loading && !loadingAuth ? (
+        <div style={{ flexGrow: 1 }}>
+          <MobileView style={{ padding: 20 }}>
+            <Grid
+              container
+              spacing={0}
+              direction="column"
+              alignItems="center"
+              justify="center"
+            >
               <Grid container spacing={3} align="center" direction="column">
                 <Grid item>
                   <img src={logo} draggable="false" width="180" />
@@ -273,6 +152,7 @@ const RegisterContent = (props) => {
                   <TextField
                     label="Senha"
                     type={showPwd ? "text" : "password"}
+                    fullWidth
                     error={clicked ? (password ? false : true) : false}
                     helperText={
                       clicked
@@ -281,7 +161,6 @@ const RegisterContent = (props) => {
                           : "Por favor, digite a senha"
                         : ""
                     }
-                    fullWidth
                     value={password}
                     required
                     onChange={(e) => handlePassword(e)}
@@ -372,10 +251,179 @@ const RegisterContent = (props) => {
                   </div>
                 </Grid>
               </Grid>
-            </Paper>
-          </Grid>
-        </BrowserView>
-      </div>
+            </Grid>
+          </MobileView>
+          <BrowserView
+            style={{
+              backgroundColor: "#f1e2ff",
+              backgroundImage: `url(${back}), url(${astronauta})`,
+              backgroundPosition: "right, left bottom",
+              backgroundRepeat: "no-repeat",
+            }}
+          >
+            <Grid
+              container
+              spacing={0}
+              direction="column"
+              alignItems="center"
+              justify="center"
+              style={{ minHeight: "100vh" }}
+            >
+              <Paper elevation={10} style={paperStyle}>
+                <Grid container spacing={3} align="center" direction="column">
+                  <Grid item>
+                    <img src={logo} draggable="false" width="180" />
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      label="Nome"
+                      type="text"
+                      error={clicked ? (name ? false : true) : false}
+                      helperText={
+                        clicked ? (name ? "" : "Por favor, digite o nome") : ""
+                      }
+                      fullWidth
+                      value={name}
+                      required
+                      onChange={(e) => handleName(e)}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      label="Email"
+                      type="email"
+                      error={clicked ? (email ? false : true) : false}
+                      helperText={
+                        clicked
+                          ? email
+                            ? ""
+                            : "Por favor, digite o email"
+                          : ""
+                      }
+                      fullWidth
+                      value={email}
+                      required
+                      onChange={(e) => handleEmail(e)}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      label="Senha"
+                      type={showPwd ? "text" : "password"}
+                      error={clicked ? (password ? false : true) : false}
+                      helperText={
+                        clicked
+                          ? password
+                            ? ""
+                            : "Por favor, digite a senha"
+                          : ""
+                      }
+                      fullWidth
+                      value={password}
+                      required
+                      onChange={(e) => handlePassword(e)}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="tornar senha visivel"
+                              onClick={handleClickShowPassword}
+                              onMouseDown={handleMouseDownPassword}
+                              edge="end"
+                            >
+                              {showPwd ? (
+                                <VisibilityIcon />
+                              ) : (
+                                <VisibilityOffIcon />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <TextField
+                      label="Confirmar Senha"
+                      type={showPwd ? "text" : "password"}
+                      error={
+                        clicked
+                          ? password
+                            ? password === passwordConfirm
+                              ? false
+                              : true
+                            : false
+                          : false
+                      }
+                      helperText={
+                        clicked
+                          ? password
+                            ? password === passwordConfirm
+                              ? ""
+                              : "As senhas devem ser iguais!"
+                            : ""
+                          : ""
+                      }
+                      fullWidth
+                      value={passwordConfirm}
+                      required
+                      onChange={(e) => handlePasswordConfirm(e)}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="tornar senha visivel"
+                              onClick={handleClickShowPassword}
+                              onMouseDown={handleMouseDownPassword}
+                              edge="end"
+                            >
+                              {showPwd ? (
+                                <VisibilityIcon />
+                              ) : (
+                                <VisibilityOffIcon />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
+                  <Grid item />
+                  <Grid item>
+                    <Button
+                      type="submit"
+                      color="primary"
+                      variant="contained"
+                      onClick={() => register()}
+                      fullWidth
+                    >
+                      Registrar
+                    </Button>
+                  </Grid>
+                  <Grid item>
+                    <div>
+                      {`Já tem uma conta? `}
+                      <Link component={RouterLink} to="/login">
+                        Entrar
+                      </Link>
+                    </div>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Grid>
+          </BrowserView>
+        </div>
+      ) : (
+        <div style={{ flexGrow: 1 }}>
+          <Carregando />
+        </div>
+      )}
+      <ModalAlerta
+        open={open}
+        handleClose={handleClose}
+        mensagem={mensagem}
+        titulo={titulo}
+      />
     </React.Fragment>
   );
 };
