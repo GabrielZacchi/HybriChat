@@ -21,10 +21,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import {
   addDoc,
   collection,
-  getDocs,
+  onSnapshot,
   orderBy,
   query,
-  where,
 } from "firebase/firestore";
 
 const useStyles = makeStyles((theme) => ({
@@ -33,10 +32,10 @@ const useStyles = makeStyles((theme) => ({
   },
   iconDesign: {
     fontSize: "1.5em",
-    color: "#cb43fc",
+    color: "#542788",
   },
   primary: {
-    color: "#cb43fc",
+    color: "#542788",
   },
 }));
 
@@ -52,17 +51,17 @@ function Rooms() {
     refreshChannelList();
   }, []);
 
-  const refreshChannelList = async () => {
-    const data = [];
-    const q = query(collection(db, "channels"), orderBy("channelName", "asc"));
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
-      data.push({
-        channelName: doc.data().channelName,
-        id: doc.id,
-      });
+  const refreshChannelList = () => {
+    const channelRef = collection(db, "channels");
+    const q = query(channelRef, orderBy("channelName", "asc"));
+    onSnapshot(q, (snapshot) => {
+      setChannelList(
+        snapshot.docs.map((doc) => ({
+          channelName: doc.data().channelName,
+          id: doc.id,
+        }))
+      );
     });
-    setChannelList(data);
   };
 
   const handleClick = () => {
@@ -81,7 +80,7 @@ function Rooms() {
     setAlert(!alert);
   };
 
-  const addChannel = async (cName) => {
+  const addChannel = (cName) => {
     if (cName) {
       cName = cName.toLowerCase();
       for (var i = 0; i < channelList.length; i++) {
@@ -91,12 +90,11 @@ function Rooms() {
         }
       }
 
-      const docRef = await addDoc(collection(db, "channels"), {
+      addDoc(collection(db, "channels"), {
         channelName: cName.toLowerCase(),
       })
         .then((res) => {
           console.log("added new channel");
-          refreshChannelList();
         })
         .then((err) => {
           console.log(err);
@@ -124,7 +122,7 @@ function Rooms() {
         <CreateRoom create={addChannel} manage={manageCreateRoomModal} />
       ) : null}
       <ListItem style={{ paddingTop: 0, paddingBottom: 0 }}>
-        <ListItemText primary="Create New Channel" />
+        <ListItemText primary="Criar Novo Canal" />
         <IconButton edge="end" aria-label="add" onClick={manageCreateRoomModal}>
           <AddIcon className={classes.primary} />
         </IconButton>
@@ -136,7 +134,7 @@ function Rooms() {
           <ListItemIcon>
             <ChatIcon className={classes.iconDesign} />
           </ListItemIcon>
-          <ListItemText primary="CHANNELS" style={{ color: "#8e9297" }} />
+          <ListItemText primary="Canais" />
           {open ? (
             <ExpandLessIcon className={classes.primary} />
           ) : (
@@ -156,12 +154,10 @@ function Rooms() {
                 <ListItemIcon style={{ minWidth: "30px" }}>
                   <TagIcon
                     className={classes.iconDesign}
-                    style={{ color: "#b9bbbe" }}
                   />
                 </ListItemIcon>
                 <ListItemText
                   primary={channel.channelName}
-                  style={{ color: "#dcddde" }}
                 />
               </ListItem>
             ))}

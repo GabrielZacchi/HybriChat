@@ -1,20 +1,33 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import HomeContent from '../components/Home/Content';
-
+import React from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import HomeContent from "../components/Home/Content";
+import AppBarChat from "../components/Home/AppBar";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../firebase";
 
 const useStyles = makeStyles((theme) => ({
-    root: {
-      flexGrow: 1,
-      display: 'flex',
-    },
-  }));
+  root: {
+    flexGrow: 1,
+    display: "flex",
+  },
+  toolbar: theme.mixins.toolbar,
+  content: {
+    flexGrow: 1,
+    backgroundColor: "#f1e2ff !important",
+    height: "100vh",
+  },
+}));
 
 export default function Home() {
-    const classes = useStyles();
-    return(
-        <div className={classes.root}>
-            <HomeContent />
-        </div>
-    )
+  const classes = useStyles();
+  const [user, loadingAuth, error] = useAuthState(auth);
+  return (
+    <div className={classes.root}>
+      <AppBarChat user={user}/>
+      <main className={classes.content}>
+        <div className={classes.toolbar} style={{ minHeight: "50px" }} />
+        <HomeContent user={user}/>
+      </main>
+    </div>
+  );
 }

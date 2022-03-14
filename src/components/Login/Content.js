@@ -241,13 +241,6 @@ const LoginContent = (props) => {
                       fullWidth
                       value={password}
                       error={clicked ? (password ? false : true) : false}
-                      helperText={
-                        clicked
-                          ? password
-                            ? ""
-                            : "Por favor, digite a senha"
-                          : ""
-                      }
                       required
                       onChange={(e) => handlePassword(e)}
                       onKeyPress={(e) => {

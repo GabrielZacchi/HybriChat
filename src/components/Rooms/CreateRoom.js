@@ -31,19 +31,18 @@ function CreateRoom({ create, manage }) {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"Create A New Channel"}
+          {"Criar Novo Canal"}
         </DialogTitle>
         <DialogContent>
           <form autoComplete="off" onSubmit={handleNewRoom}>
             <TextField
               id="outlined-basic"
-              label="Enter Channel Name"
+              label="Nome do Canal"
               fullWidth
               margin="normal"
               variant="outlined"
               required
               value={roomName}
-              style={{ backgroundColor: "rgb(45 45 73)", borderRadius: "5px" }}
               onChange={(e) => {
                 setRoomName(e.target.value);
               }}
@@ -52,11 +51,14 @@ function CreateRoom({ create, manage }) {
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={handleClose}
+            onClick={(e) => {
+              handleClose(e);
+            }}
+            type="submit"
             color="primary"
-            style={{ color: "white" }}
+            autoFocus
           >
-            Cancel
+            Cancelar
           </Button>
           <Button
             onClick={(e) => {
@@ -65,9 +67,8 @@ function CreateRoom({ create, manage }) {
             type="submit"
             color="primary"
             autoFocus
-            variant="contained"
           >
-            Create
+            Criar
           </Button>
         </DialogActions>
       </Dialog>

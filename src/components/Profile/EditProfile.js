@@ -5,7 +5,9 @@ import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import { db } from "../../firebase";
+import { db, auth } from "../../firebase";
+import { collection, doc, getDoc, query, setDoc, where } from "firebase/firestore";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 function EditProfile({ toggler, alert }) {
   const [open, setOpen] = useState(true);
@@ -13,6 +15,7 @@ function EditProfile({ toggler, alert }) {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [uid, setUid] = useState("");
+  const [user, loadingAuth, error] = useAuthState(auth);
 
   const handleClose = () => {
     setOpen(false);
@@ -21,28 +24,25 @@ function EditProfile({ toggler, alert }) {
 
   const updateProfile = (e) => {
     e.preventDefault();
-    db.collection("users")
-      .doc(uid)
-      .update({
-        displayName: displayName,
-      })
+    const userRef = doc(db, "users", uid);
+    setDoc(userRef, {
+      displayName: displayName,
+    })
       .then((res) => {
         alert();
       })
       .catch((err) => {
         console.log(err);
       });
-
     setOpen(false);
     toggler();
   };
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("userDetails"));
-    setUserName(userData.name);
-    setDisplayName(userData.displayName);
-    setEmail(userData.email);
-    setUid(userData.uid);
+    setUserName(user.name);
+    setDisplayName(user.displayName);
+    setEmail(user.email);
+    setUid(user.uid);
   }, []);
 
   return (

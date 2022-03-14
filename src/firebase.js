@@ -17,6 +17,10 @@ import {
   addDoc,
 } from "firebase/firestore";
 
+import {
+  getStorage
+} from "firebase/storage";
+
 import VerifyErroCode from "./components/traduzirErros";
 
 const firebaseConfig = {
@@ -30,6 +34,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 const signInWithGoogle = async () => {
   try {
@@ -76,6 +81,7 @@ const registerWithEmailAndPassword = async (
     await addDoc(collection(db, "users"), {
       uid: user.uid,
       name,
+      displayName: name,
       authProvider: "local",
       email,
     });
@@ -113,6 +119,7 @@ const logout = () => {
 export {
   auth,
   db,
+  storage,
   signInWithGoogle,
   logInWithEmailAndPassword,
   registerWithEmailAndPassword,

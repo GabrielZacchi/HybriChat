@@ -36,3 +36,37 @@
     transform: rotate(360deg);
   }
 }
+
+body {
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 9px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  border-radius: 5px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+}
+
+.emoji-mart {
+  position: absolute !important;
+  bottom: 70px !important;
+}
+
+.emoji-mart-preview {
+  display: none !important;
+}
+
+.MuiDialog-paper {
+  overflow-y: visible !important;
+  width: 530px;
+}

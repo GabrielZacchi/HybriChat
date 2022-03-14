@@ -5,20 +5,35 @@ import Grid from "@material-ui/core/Grid";
 import Messages from "./Messages";
 import IconButton from "@material-ui/core/IconButton";
 import { useParams } from "react-router-dom";
-import { db } from "../Firebase/Firebase";
-import firebase from "firebase/app";
+import { db, auth } from "../../firebase";
 import ScrollableFeed from "react-scrollable-feed";
-import TagIcon from '@mui/icons-material/Tag';
-import SendIcon from '@mui/icons-material/Send';
-import InsertEmoticonIcon from '@mui/icons-material/InsertEmoticon';
+import TagIcon from "@mui/icons-material/Tag";
+import SendIcon from "@mui/icons-material/Send";
+import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
 import { Picker } from "emoji-mart";
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import FileUpload from "./FileUpload";
 import "emoji-mart/css/emoji-mart.css";
+import AppBarChat from "../Home/AppBar";
+import {
+  addDoc,
+  collection,
+  doc,
+  orderBy,
+  query,
+  serverTimestamp,
+  onSnapshot,
+} from "firebase/firestore";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 const useStyles = makeStyles((theme) => ({
   root: {
+    display: "flex",
+  },
+  toolbar: theme.mixins.toolbar,
+  content: {
     flexGrow: 1,
+    height: "100vh",
   },
   chat: {
     position: "relative",
@@ -26,6 +41,7 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: "10px",
     paddingBottom: "5px",
     paddingTop: "5px",
+    backgroundColor: "#f1e2ff"
   },
   footer: {
     paddingRight: "15px",
@@ -37,12 +53,10 @@ const useStyles = makeStyles((theme) => ({
     color: "white",
   },
   roomName: {
-    border: "1px solid #0000004a",
     borderLeft: 0,
     borderRight: 0,
     padding: "15px",
     display: "flex",
-    color: "#e5e5e5",
   },
   roomNameText: {
     marginBlockEnd: 0,
@@ -51,11 +65,9 @@ const useStyles = makeStyles((theme) => ({
   },
   iconDesign: {
     fontSize: "1.5em",
-    color: "#e5e5e5",
   },
   footerContent: {
     display: "flex",
-    backgroundColor: "#303753",
     borderRadius: "5px",
     alignItems: "center",
   },
@@ -73,36 +85,33 @@ function Chat() {
   const [emojiBtn, setEmojiBtn] = useState(false);
   const [modalState, setModalState] = useState(false);
   const [file, setFileName] = useState(null);
+  const [user, loadingAuth, error] = useAuthState(auth);
 
   useEffect(() => {
-    if (params.id) {
-      db.collection("channels")
-        .doc(params.id)
-        .onSnapshot((snapshot) => {
-          setChannelName(snapshot.data().channelName);
-        });
+    const channelRef = doc(db, "channels", params.id);
+    onSnapshot(channelRef, { includeMetadataChanges: true }, (doc) => {
+      setChannelName(doc.data().channelName);
+    });
+    const messagesRef = collection(channelRef, "messages");
+    const q = query(messagesRef, orderBy("timestamp", "asc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setAllMessages(
+        snapshot.docs.map((message) => ({
+          id: message.id,
+          data: message.data(),
+        }))
+      );
+    });
+    return unsubscribe;
+  }, []);
 
-      db.collection("channels")
-        .doc(params.id)
-        .collection("messages")
-        .orderBy("timestamp", "asc")
-        .onSnapshot((snapshot) => {
-          setAllMessages(
-            snapshot.docs.map((doc) => ({ id: doc.id, data: doc.data() }))
-          );
-        });
-    }
-  }, [params]);
-
-  const sendMsg = (e) => {
+  const sendMsg = async (e) => {
     e.preventDefault();
     if (userNewMsg && params.id) {
-      const userData = JSON.parse(localStorage.getItem("userDetails"));
-
-      if (userData) {
-        const displayName = userData.displayName;
-        const imgUrl = userData.photoURL;
-        const uid = userData.uid;
+      if (user) {
+        const displayName = user.displayName;
+        const imgUrl = user.photoURL;
+        const uid = user.uid;
         const likeCount = 0;
         const likes = {};
         const fireCount = 0;
@@ -112,9 +121,9 @@ function Chat() {
         const postImg = null;
         const obj = {
           text: userNewMsg,
-          timestamp: firebase.firestore.Timestamp.now(),
+          timestamp: serverTimestamp(),
           userImg: imgUrl,
-          userName: displayName,
+          userName: user.displayName,
           uid: uid,
           likeCount: likeCount,
           likes: likes,
@@ -125,10 +134,10 @@ function Chat() {
           postImg: postImg,
         };
 
-        db.collection("channels")
-          .doc(params.id)
-          .collection("messages")
-          .add(obj)
+        const channelRef = doc(db, "channels", params.id);
+        const messagesRef = collection(channelRef, "messages");
+
+        await addDoc(messagesRef, obj)
           .then((res) => {
             console.log("message sent");
           })
@@ -161,75 +170,79 @@ function Chat() {
 
   return (
     <div className={classes.root}>
-      {modalState ? <FileUpload setState={openModal} file={file} /> : null}
-      <Grid item xs={12} className={classes.roomName}>
-        <TagIcon className={classes.iconDesign} />
-        <h3 className={classes.roomNameText}>{channelName}</h3>
-      </Grid>
-      <Grid item xs={12} className={classes.chat}>
-        <ScrollableFeed>
-          {allMessages.map((message) => (
-            <Messages
-              key={message.id}
-              values={message.data}
-              msgId={message.id}
+      <AppBarChat user={user} />
+      <main className={classes.content}>
+        <div className={classes.toolbar} style={{ minHeight: "50px" }} />
+        {modalState ? <FileUpload setState={openModal} file={file} /> : null}
+        <Grid item xs={12} className={classes.roomName}>
+          <TagIcon className={classes.iconDesign} />
+          <h3 className={classes.roomNameText}>{channelName}</h3>
+        </Grid>
+        <Grid item xs={12} className={classes.chat}>
+          <ScrollableFeed>
+            {allMessages.map((message) => (
+              <Messages
+                key={message.id}
+                values={message.data}
+                msgId={message.id}
+              />
+            ))}
+          </ScrollableFeed>
+        </Grid>
+        <div className={classes.footer}>
+          <Grid item xs={12} className={classes.footerContent}>
+            <input
+              accept="image/*"
+              className={classes.inputFile}
+              id="icon-button-file"
+              type="file"
+              onChange={(e) => handelFileUpload(e)}
             />
-          ))}
-        </ScrollableFeed>
-      </Grid>
-      <div className={classes.footer}>
-        <Grid item xs={12} className={classes.footerContent}>
-          <input
-            accept="image/*"
-            className={classes.inputFile}
-            id="icon-button-file"
-            type="file"
-            onChange={(e) => handelFileUpload(e)}
-          />
-          <label htmlFor="icon-button-file">
+            <label htmlFor="icon-button-file">
+              <IconButton
+                color="primary"
+                aria-label="upload picture"
+                component="span"
+              >
+                <AddPhotoAlternateIcon />
+              </IconButton>
+            </label>
+
             <IconButton
               color="primary"
-              aria-label="upload picture"
-              component="span"
+              component="button"
+              onClick={() => setEmojiBtn(!emojiBtn)}
             >
-              <AddPhotoAlternateIcon style={{ color: "#b9bbbe" }} />
+              <InsertEmoticonIcon />
             </IconButton>
-          </label>
+            {emojiBtn ? <Picker onSelect={addEmoji} theme="dark" /> : null}
 
-          <IconButton
-            color="primary"
-            component="button"
-            onClick={() => setEmojiBtn(!emojiBtn)}
-          >
-            <InsertEmoticonIcon style={{ color: "#b9bbbe" }} />
-          </IconButton>
-          {emojiBtn ? <Picker onSelect={addEmoji} theme="dark" /> : null}
-
-          <form
-            autoComplete="off"
-            style={{ width: "100%", display: "flex" }}
-            onSubmit={(e) => sendMsg(e)}
-          >
-            <TextField
-              className={classes.message}
-              required
-              id="outlined-basic"
-              label="Enter Message"
-              variant="outlined"
-              multiline
-              rows={1}
-              rowsMax={2}
-              value={userNewMsg}
-              onChange={(e) => {
-                setUserNewMsg(e.target.value);
-              }}
-            />
-            <IconButton type="submit" component="button">
-              <SendIcon style={{ color: "#b9bbbe" }} />
-            </IconButton>
-          </form>
-        </Grid>
-      </div>
+            <form
+              autoComplete="off"
+              style={{ width: "100%", display: "flex" }}
+              onSubmit={(e) => sendMsg(e)}
+            >
+              <TextField
+                className={classes.message}
+                required
+                id="outlined-basic"
+                label="Mensagem"
+                variant="outlined"
+                multiline
+                rows={1}
+                rowsMax={2}
+                value={userNewMsg}
+                onChange={(e) => {
+                  setUserNewMsg(e.target.value);
+                }}
+              />
+              <IconButton type="submit" component="button">
+                <SendIcon />
+              </IconButton>
+            </form>
+          </Grid>
+        </div>
+      </main>
     </div>
   );
 }
