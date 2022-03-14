@@ -39,7 +39,6 @@ function EditProfile({ toggler, alert }) {
   };
 
   useEffect(() => {
-    setUserName(user.name);
     setDisplayName(user.displayName);
     setEmail(user.email);
     setUid(user.uid);
@@ -52,23 +51,9 @@ function EditProfile({ toggler, alert }) {
         onClose={handleClose}
         aria-labelledby="form-dialog-title"
       >
-        <DialogTitle id="form-dialog-title">Edit User Profile</DialogTitle>
+        <DialogTitle id="form-dialog-title">Editar Perfil</DialogTitle>
         <DialogContent>
           <form autoComplete="off">
-            <TextField
-              id="outlined-basic"
-              label="Name"
-              fullWidth
-              margin="normal"
-              variant="outlined"
-              disabled
-              value={userName}
-              style={{
-                backgroundColor: "rgb(45, 45, 73)",
-                borderRadius: "5px",
-                color: "#a6a6a6",
-              }}
-            />
             <TextField
               id="outlined-basic"
               label="Email"
@@ -77,24 +62,15 @@ function EditProfile({ toggler, alert }) {
               variant="outlined"
               disabled
               value={email}
-              style={{
-                backgroundColor: "rgb(45, 45, 73)",
-                borderRadius: "5px",
-                color: "#a6a6a6",
-              }}
             />
 
             <TextField
               id="outlined-basic"
-              label="Display Name"
+              label="Nome"
               fullWidth
               margin="normal"
               variant="outlined"
               value={displayName}
-              style={{
-                backgroundColor: "rgb(45, 45, 73)",
-                borderRadius: "5px",
-              }}
               onChange={(e) => {
                 setDisplayName(e.target.value);
               }}
@@ -102,15 +78,14 @@ function EditProfile({ toggler, alert }) {
           </form>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} style={{ color: "white" }}>
-            Cancel
+          <Button onClick={handleClose} color="primary">
+            Cancelar
           </Button>
           <Button
             onClick={(e) => updateProfile(e)}
             color="primary"
-            variant="contained"
           >
-            Update
+            Salvar
           </Button>
         </DialogActions>
       </Dialog>

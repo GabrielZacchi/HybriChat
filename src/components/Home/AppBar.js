@@ -210,7 +210,7 @@ function AppBarChat(props) {
         open={alert}
         onClose={handleAlert}
         TransitionComponent={Fade}
-        message="Display Name Updated Successfully"
+        message="Perfil Editado com Sucesso!"
         key={Fade}
         action={
           <IconButton aria-label="close" color="inherit" onClick={handleAlert}>
@@ -268,11 +268,11 @@ function AppBarChat(props) {
               onClose={handleClose}
             >
               <MenuItem onClick={toggleEditProfile}>
-                <ManageAccountsIcon /> &nbsp; Edit Profile
+                <ManageAccountsIcon /> &nbsp; Editar Perfil
               </MenuItem>
 
               <MenuItem onClick={signOut}>
-                <ExitToAppIcon /> &nbsp; Sign Out of Chatify
+                <ExitToAppIcon /> &nbsp; Sair
               </MenuItem>
             </Menu>
           </div>

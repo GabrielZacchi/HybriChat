@@ -10,6 +10,7 @@ import LinearProgress from "@material-ui/core/LinearProgress";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
 import { storage, db, auth } from "../../firebase";
+import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
 import { useParams } from "react-router-dom";
 import { addDoc, collection, serverTimestamp, doc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -94,22 +95,44 @@ function FileUpload({ setState, file }) {
   const handleUpload = (e) => {
     e.preventDefault();
     setProgressBar({ display: "block" });
-    const uploadRef = storage.ref(`images/${file.name}`).put(file);
-    uploadRef.on(
+    const uploadRef = ref(storage, `images/${file.name}`);
+    const uploadTask = uploadBytesResumable(uploadRef, file);
+    uploadTask.on(
       "state_changed",
       (snapshot) => {
         // Observe state change events such as progress, pause, and resume
         // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-        let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         setProgress(progress);
+        switch (snapshot.state) {
+          case 'paused':
+            console.log('Upload is paused');
+            break;
+          case 'running':
+            console.log('Upload is running');
+            break;
+        }
       },
       (error) => {
-        console.log(error);
+        switch (error.code) {
+          case 'storage/unauthorized':
+            // User doesn't have permission to access the object
+            break;
+          case 'storage/canceled':
+            // User canceled the upload
+            break;
+
+          // ...
+
+          case 'storage/unknown':
+            // Unknown error occurred, inspect error.serverResponse
+            break;
+        }
       },
       () => {
         // Handle successful uploads on complete
         // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-        uploadRef.snapshot.ref.getDownloadURL().then((downloadURL) => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           sendMsg(downloadURL);
         });
         handleClose();
@@ -130,7 +153,7 @@ function FileUpload({ setState, file }) {
           <Typography className={classes.imageName}>{file.name}</Typography>
         </div>
 
-        <DialogTitle id="alert-dialog-title">Upload Image</DialogTitle>
+        <DialogTitle id="alert-dialog-title">Enviar Imagem</DialogTitle>
 
         <DialogContent>
           <form
@@ -141,14 +164,10 @@ function FileUpload({ setState, file }) {
           >
             <TextField
               id="outlined-basic"
-              label="Add A Message"
+              label="Mensagem"
               fullWidth
               margin="normal"
               variant="outlined"
-              style={{
-                backgroundColor: "rgb(45, 45, 73)",
-                borderRadius: "5px",
-              }}
               onChange={(e) => {
                 setMessage(e.target.value);
               }}
@@ -167,7 +186,7 @@ function FileUpload({ setState, file }) {
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} style={{ color: "white" }}>
+          <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
           <Button
@@ -175,7 +194,6 @@ function FileUpload({ setState, file }) {
             onClick={(e) => handleUpload(e)}
             color="primary"
             autoFocus
-            variant="contained"
           >
             Upload
           </Button>

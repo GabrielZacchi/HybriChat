@@ -88,22 +88,24 @@ function Chat() {
   const [user, loadingAuth, error] = useAuthState(auth);
 
   useEffect(() => {
-    const channelRef = doc(db, "channels", params.id);
-    onSnapshot(channelRef, { includeMetadataChanges: true }, (doc) => {
-      setChannelName(doc.data().channelName);
-    });
-    const messagesRef = collection(channelRef, "messages");
-    const q = query(messagesRef, orderBy("timestamp", "asc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setAllMessages(
-        snapshot.docs.map((message) => ({
-          id: message.id,
-          data: message.data(),
-        }))
-      );
-    });
-    return unsubscribe;
-  }, []);
+    if (params.id) {
+      const channelRef = doc(db, "channels", params.id);
+      onSnapshot(channelRef, { includeMetadataChanges: true }, (doc) => {
+        setChannelName(doc.data().channelName);
+      });
+      const messagesRef = collection(channelRef, "messages");
+      const q = query(messagesRef, orderBy("timestamp", "asc"));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        setAllMessages(
+          snapshot.docs.map((message) => ({
+            id: message.id,
+            data: message.data(),
+          }))
+        );
+      });
+      return unsubscribe;
+    }
+  }, [params]);
 
   const sendMsg = async (e) => {
     e.preventDefault();
