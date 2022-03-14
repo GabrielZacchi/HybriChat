@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Grid from "@material-ui/core/Grid";
 import { makeStyles } from "@material-ui/core/styles";
 import Avatar from "@material-ui/core/Avatar";
-import { deepPurple } from "@material-ui/core/colors";
 import IconButton from "@material-ui/core/IconButton";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
@@ -51,7 +50,7 @@ const useStyles = makeStyles((theme) => ({
   emojiDiv: {
     position: "absolute",
     right: 0,
-    top: 0,
+    top: 40,
   },
   emojiDivInner: {
     position: "absolute",
@@ -94,10 +93,10 @@ function Messages({ values, msgId }) {
   const date = values.timestamp ? values.timestamp.toDate() : new Date();
   const day = date.getDate();
   const year = date.getFullYear();
-  const month = date.getMonth();
+  const month = date.getMonth()+1;
   const hour = date.getHours();
   const minute = date.getMinutes();
-  const time = `${day}/${month}/${year}   ${hour}:${minute}`;
+  const time = `${(day < 10 ? '0' : '') + day}/${(month < 10 ? '0' : '') + month}/${year}   ${(hour < 10 ? '0' : '') + hour}:${(minute < 10 ? '0' : '') + minute}`;
 
   const numLikes = values.likeCount;
   const numFire = values.fireCount;
@@ -134,7 +133,6 @@ function Messages({ values, msgId }) {
     const messageRef = doc(messagesRef, msgId);
     if (userHeart) {
       return runTransaction(db, (transaction) => {
-        // This code may get re-run multiple times if there are conflicts.
         return transaction.get(messageRef).then((doc) => {
           if (!doc) {
             console.log("doc not found");
@@ -152,14 +150,13 @@ function Messages({ values, msgId }) {
         });
       })
         .then(() => {
-          console.log("Disiked");
+          console.log("Disliked");
         })
         .catch((error) => {
           console.log(error);
         });
     } else {
       return runTransaction(db, (transaction) => {
-        // This code may get re-run multiple times if there are conflicts.
         return transaction.get(messageRef).then((doc) => {
           if (!doc) {
             console.log("doc not found");
@@ -189,7 +186,6 @@ function Messages({ values, msgId }) {
     const messageRef = doc(messagesRef, msgId);
     if (userFire) {
       return runTransaction(db, (transaction) => {
-        // This code may get re-run multiple times if there are conflicts.
         return transaction.get(messageRef).then((doc) => {
           if (!doc) {
             console.log("doc not found");
@@ -207,14 +203,13 @@ function Messages({ values, msgId }) {
         });
       })
         .then(() => {
-          console.log("Disiked");
+          console.log("Disliked");
         })
         .catch((error) => {
           console.log(error);
         });
     } else {
       return runTransaction(db, (transaction) => {
-        // This code may get re-run multiple times if there are conflicts.
         return transaction.get(messageRef).then((doc) => {
           if (!doc) {
             console.log("doc not found");
@@ -244,7 +239,6 @@ function Messages({ values, msgId }) {
     const messageRef = doc(messagesRef, msgId);
     if (userLiked) {
       return runTransaction(db, (transaction) => {
-        // This code may get re-run multiple times if there are conflicts.
         return transaction.get(messageRef).then((doc) => {
           if (!doc) {
             console.log("doc not found");
@@ -262,14 +256,13 @@ function Messages({ values, msgId }) {
         });
       })
         .then(() => {
-          console.log("Disiked");
+          console.log("Disliked");
         })
         .catch((error) => {
           console.log(error);
         });
     } else {
       return runTransaction(db, (transaction) => {
-        // This code may get re-run multiple times if there are conflicts.
         return transaction.get(messageRef).then((doc) => {
           if (!doc) {
             console.log("doc not found");
@@ -355,7 +348,7 @@ function Messages({ values, msgId }) {
               <img
                 src={postImg}
                 alt="user"
-                style={{ height: "30vh", width: "auto", borderRadius: "4px" }}
+                style={{ height: "auto", maxHeight: "100%", width: "auto", maxWidth: "100%", borderRadius: "4px" }}
               />
             ) : null}
           </Grid>

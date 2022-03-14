@@ -28,7 +28,7 @@ function DeleteModal({ msgId, text, deleteMsg, handleModal, postImg }) {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"Are you sure you want to delete the message?"}
+          {"Tem certeza de que deseja excluir a mensagem?"}
         </DialogTitle>
         <DialogContent>
           <DialogContentText
@@ -46,17 +46,16 @@ function DeleteModal({ msgId, text, deleteMsg, handleModal, postImg }) {
           ) : null}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} style={{ color: "white" }}>
-            Cancel
+          <Button onClick={handleClose} color="primary">
+            Cancelar
           </Button>
 
           <Button
             onClick={handleDelete}
             color="primary"
             autoFocus
-            variant="contained"
           >
-            Delete
+            Deletar
           </Button>
         </DialogActions>
       </Dialog>

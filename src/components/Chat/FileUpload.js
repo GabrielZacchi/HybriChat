@@ -10,7 +10,7 @@ import LinearProgress from "@material-ui/core/LinearProgress";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
 import { storage, db, auth } from "../../firebase";
-import { getDownloadURL, ref, uploadBytes, uploadBytesResumable } from "firebase/storage";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { useParams } from "react-router-dom";
 import { addDoc, collection, serverTimestamp, doc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -100,8 +100,6 @@ function FileUpload({ setState, file }) {
     uploadTask.on(
       "state_changed",
       (snapshot) => {
-        // Observe state change events such as progress, pause, and resume
-        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         setProgress(progress);
         switch (snapshot.state) {
@@ -116,22 +114,14 @@ function FileUpload({ setState, file }) {
       (error) => {
         switch (error.code) {
           case 'storage/unauthorized':
-            // User doesn't have permission to access the object
             break;
           case 'storage/canceled':
-            // User canceled the upload
             break;
-
-          // ...
-
           case 'storage/unknown':
-            // Unknown error occurred, inspect error.serverResponse
             break;
         }
       },
       () => {
-        // Handle successful uploads on complete
-        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           sendMsg(downloadURL);
         });
@@ -168,8 +158,14 @@ function FileUpload({ setState, file }) {
               fullWidth
               margin="normal"
               variant="outlined"
+              autoFocus
               onChange={(e) => {
                 setMessage(e.target.value);
+              }}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  setMessage(e.target.value);
+                }
               }}
             />
           </form>
@@ -187,15 +183,14 @@ function FileUpload({ setState, file }) {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
-            Cancel
+            Cancelar
           </Button>
           <Button
             type="submit"
             onClick={(e) => handleUpload(e)}
             color="primary"
-            autoFocus
           >
-            Upload
+            Enviar
           </Button>
         </DialogActions>
       </Dialog>

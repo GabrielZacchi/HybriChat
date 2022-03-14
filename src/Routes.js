@@ -14,13 +14,14 @@ function RoutesHandler() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route exact path="/login" element={<Login />} />
-                <Route exact path="/register" element={<Register />} />
-                <Route exact path="/reset" element={<Reset />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/reset" element={<Reset />} />
 
                 <Route exact path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
-                <Route exact path="/channel" element={<PrivateRoute><Chat /></PrivateRoute>}/>
-                <Route exact path="/channel/:id" element={<PrivateRoute><Chat /></PrivateRoute>}/>
+                <Route path="/channel" element={<PrivateRoute><Chat /></PrivateRoute>}/>
+                <Route path="/channel/:id" element={<PrivateRoute><Chat /></PrivateRoute>}/>
+
             </Routes>
         </BrowserRouter>
     )

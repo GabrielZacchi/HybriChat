@@ -111,7 +111,6 @@ function Chat() {
     e.preventDefault();
     if (userNewMsg && params.id) {
       if (user) {
-        const displayName = user.displayName;
         const imgUrl = user.photoURL;
         const uid = user.uid;
         const likeCount = 0;
@@ -147,7 +146,6 @@ function Chat() {
             console.log(err);
           });
       }
-
       setUserNewMsg("");
       setEmojiBtn(false);
     }
@@ -234,8 +232,14 @@ function Chat() {
                 rows={1}
                 rowsMax={2}
                 value={userNewMsg}
+                autoFocus
                 onChange={(e) => {
                   setUserNewMsg(e.target.value);
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    sendMsg(e);
+                  }
                 }}
               />
               <IconButton type="submit" component="button">

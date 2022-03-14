@@ -42,9 +42,15 @@ function CreateRoom({ create, manage }) {
               margin="normal"
               variant="outlined"
               required
+              autoFocus
               value={roomName}
               onChange={(e) => {
                 setRoomName(e.target.value);
+              }}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  setRoomName(e.target.value);
+                }
               }}
             />
           </form>
@@ -56,7 +62,6 @@ function CreateRoom({ create, manage }) {
             }}
             type="submit"
             color="primary"
-            autoFocus
           >
             Cancelar
           </Button>
@@ -66,7 +71,6 @@ function CreateRoom({ create, manage }) {
             }}
             type="submit"
             color="primary"
-            autoFocus
           >
             Criar
           </Button>

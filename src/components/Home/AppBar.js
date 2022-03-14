@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import AppBar from "@material-ui/core/AppBar";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Divider from "@material-ui/core/Divider";
@@ -15,11 +15,10 @@ import Menu from "@material-ui/core/Menu";
 import Badge from "@material-ui/core/Badge";
 import Avatar from "@material-ui/core/Avatar";
 import { Grid } from "@material-ui/core";
-import { deepPurple } from "@material-ui/core/colors";
 import Rooms from "../Rooms/Rooms";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
-import { auth, db } from "../../firebase";
+import { auth } from "../../firebase";
 import { Link } from "react-router-dom";
 import EditProfile from "../Profile/EditProfile";
 import Fade from "@material-ui/core/Fade";
@@ -102,7 +101,6 @@ const useStyles = makeStyles((theme) => ({
       display: "none",
     },
   },
-  // necessary for content to be below app bar
   toolbar: theme.mixins.toolbar,
   drawerPaper: {
     width: drawerWidth,
@@ -128,7 +126,6 @@ function AppBarChat(props) {
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [userDetails, setUserDetails] = useState([]);
   const [editProfileModal, setEditProfileModal] = useState(false);
   const [alert, setAlert] = useState(false);
   const open = Boolean(anchorEl);
@@ -197,7 +194,7 @@ function AppBarChat(props) {
         </div>
       </Grid>
       <Divider />
-      <Rooms />
+      <Rooms setMobileOpen={setMobileOpen}/>
       <Divider />
     </div>
   );
@@ -280,7 +277,7 @@ function AppBarChat(props) {
       </AppBar>
 
       <nav className={classes.drawer} aria-label="chat rooms">
-        {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
+        {}
         <Hidden smUp implementation="css">
           <Drawer
             variant="temporary"
@@ -291,7 +288,7 @@ function AppBarChat(props) {
               paper: classes.drawerPaper,
             }}
             ModalProps={{
-              keepMounted: true, // Better open performance on mobile.
+              keepMounted: true,
             }}
           >
             {drawer}

@@ -25,6 +25,7 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
+import { Button } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   nested: {
@@ -39,7 +40,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function Rooms() {
+const Rooms = (props) => {
+  const { setMobileOpen } = props;
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
   const [channelList, setChannelList] = useState([]);
@@ -69,6 +71,7 @@ function Rooms() {
   };
 
   const goToChannel = (id) => {
+    setMobileOpen(false);
     navigate(`/channel/${id}`);
   };
 
@@ -122,10 +125,9 @@ function Rooms() {
         <CreateRoom create={addChannel} manage={manageCreateRoomModal} />
       ) : null}
       <ListItem style={{ paddingTop: 0, paddingBottom: 0 }}>
-        <ListItemText primary="Criar Novo Canal" />
-        <IconButton edge="end" aria-label="add" onClick={manageCreateRoomModal}>
-          <AddIcon className={classes.primary} />
-        </IconButton>
+        <Button endIcon={<AddIcon className={classes.primary} />} onClick={manageCreateRoomModal}>
+          Criar Novo Canal
+        </Button>
       </ListItem>
       <Divider />
 

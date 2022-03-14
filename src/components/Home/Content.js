@@ -9,7 +9,6 @@ import Avatar from "@material-ui/core/Avatar";
 import { db } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 import {
-  addDoc,
   collection,
   onSnapshot,
   orderBy,
@@ -24,9 +23,7 @@ const useStyles = makeStyles((theme) => ({
   heading: {
     fontSize: "2.2em",
     fontWeight: "700",
-  },
-  subHeading: {
-    fontSize: "1.6em",
+    color: "grey"
   },
   channelDiv: {
     padding: "15px",
