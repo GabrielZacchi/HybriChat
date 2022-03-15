@@ -60,6 +60,14 @@ function EditProfile({ toggler, alert }) {
     e.preventDefault();
     if (e.target.files[0]) {
       setLoading(true);
+      if (newPhotoURL !== photoURL) {
+        const delRef = ref(storage, newPhotoURL);
+        deleteObject(delRef).then(() => {
+          console.log('Old photo deleted successfully');
+        }).catch((error) => {
+          console.log('Uh-oh, an error occurred!');
+        });
+      }
       const file = e.target.files[0];
       var time = Math.floor(new Date().getTime() / 1000);
       const uploadRef = ref(storage, `images/${time}`);
