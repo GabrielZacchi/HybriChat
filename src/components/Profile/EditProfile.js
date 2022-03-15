@@ -6,11 +6,12 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { Grid, IconButton } from "@material-ui/core";
-import { db, auth } from "../../firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { db, auth, storage } from "../../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Avatar } from "@material-ui/core";
-import { updateProfile  } from "firebase/auth";
+import { updateProfile } from "firebase/auth";
+import { getDownloadURL, ref, uploadBytesResumable, deleteObject } from "firebase/storage";
+import CircularProgress from '@mui/material/CircularProgress';
 
 function EditProfile({ toggler, alert }) {
   const [open, setOpen] = useState(true);
@@ -18,20 +19,36 @@ function EditProfile({ toggler, alert }) {
   const [email, setEmail] = useState("");
   const [uid, setUid] = useState("");
   const [photoURL, setPhotoURL] = useState("");
+  const [newPhotoURL, setNewPhotoURL] = useState("");
   const [user, loadingAuth, error] = useAuthState(auth);
+  const [loading, setLoading] = useState(false);
 
   const handleClose = () => {
     setOpen(false);
     toggler();
+    if (newPhotoURL !== photoURL) {
+      const delRef = ref(storage, newPhotoURL);
+      deleteObject(delRef).then(() => {
+        console.log('Old photo deleted successfully');
+      }).catch((error) => {
+        console.log('Uh-oh, an error occurred!');
+      });
+    }
   };
 
   const update = (e) => {
     e.preventDefault();
-    updateProfile (auth.currentUser, {
+    updateProfile(auth.currentUser, {
       displayName: displayName,
-      photoURL: photoURL
+      photoURL: newPhotoURL,
     }).then(res => {
       console.log(res);
+      const delRef = ref(storage, photoURL);
+      deleteObject(delRef).then(() => {
+        console.log('Old photo deleted successfully');
+      }).catch((error) => {
+        console.log('Uh-oh, an error occurred!');
+      });
     }).catch(err => {
       console.log(err);
     });
@@ -42,7 +59,40 @@ function EditProfile({ toggler, alert }) {
   const handelFileUpload = (e) => {
     e.preventDefault();
     if (e.target.files[0]) {
-      setPhotoURL(URL.createObjectURL(e.target.files[0]));
+      setLoading(true);
+      const file = e.target.files[0];
+      var time = Math.floor(new Date().getTime() / 1000);
+      const uploadRef = ref(storage, `images/${time}`);
+      const uploadTask = uploadBytesResumable(uploadRef, file);
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          switch (snapshot.state) {
+            case 'paused':
+              console.log('Upload is paused');
+              break;
+            case 'running':
+              console.log('Upload is running');
+              break;
+          }
+        },
+        (error) => {
+          switch (error.code) {
+            case 'storage/unauthorized':
+              break;
+            case 'storage/canceled':
+              break;
+            case 'storage/unknown':
+              break;
+          }
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            setNewPhotoURL(downloadURL);
+            setLoading(false);
+          });
+        }
+      );
     }
     e.target.value = null;
   };
@@ -52,6 +102,7 @@ function EditProfile({ toggler, alert }) {
     setEmail(user.email);
     setUid(user.uid);
     setPhotoURL(user.photoURL);
+    setNewPhotoURL(user.photoURL);
   }, []);
 
   return (
@@ -81,12 +132,15 @@ function EditProfile({ toggler, alert }) {
                 <IconButton
                   aria-label="upload picture"
                   component="span"
-                >
+                >{loading ?
+                  <CircularProgress style={{ color: '#542788' }} />
+                  :
                   <Avatar
                     style={{ height: '80px', width: '80px' }}
                     alt={displayName}
-                    src={photoURL}
+                    src={newPhotoURL}
                   />
+                  }
                 </IconButton>
               </label>
             </Grid>
