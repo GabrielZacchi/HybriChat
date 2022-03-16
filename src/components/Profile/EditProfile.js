@@ -132,11 +132,11 @@ function EditProfile({ toggler, alert }) {
               <input
                 accept="image/*"
                 style={{ display: "none" }}
-                id="icon-button-file"
+                id="profile-button-file"
                 type="file"
                 onChange={(e) => handelFileUpload(e)}
               />
-              <label htmlFor="icon-button-file">
+              <label htmlFor="profile-button-file">
                 <IconButton
                   aria-label="upload picture"
                   component="span"

@@ -13,6 +13,7 @@ import DeleteModal from "./DeleteModal";
 import { Anchorme } from "react-anchorme";
 import { collection, doc, deleteDoc, runTransaction } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
+import ModalImage from "./ModalImage";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -88,12 +89,14 @@ function Messages({ values, msgId }) {
   const [deleteModal, setDeleteModal] = useState(false);
   const classes = useStyles();
 
+  const [openImgModal, setOpenImgModal] = useState(false);
+
   const uid = user.uid;
   const messegerUid = values.uid;
   const date = values.timestamp ? values.timestamp.toDate() : new Date();
   const day = date.getDate();
   const year = date.getFullYear();
-  const month = date.getMonth()+1;
+  const month = date.getMonth() + 1;
   const hour = date.getHours();
   const minute = date.getMinutes();
   const time = `${(day < 10 ? '0' : '') + day}/${(month < 10 ? '0' : '') + month}/${year}   ${(hour < 10 ? '0' : '') + hour}:${(minute < 10 ? '0' : '') + minute}`;
@@ -127,6 +130,14 @@ function Messages({ values, msgId }) {
 
   const showDeleteModal = () => {
     setDeleteModal(!deleteModal);
+  };
+
+  const showImgModal = () => {
+    setOpenImgModal(true);
+  };
+
+  const closeImgModal = () => {
+    setOpenImgModal(false);
   };
 
   const heartClick = () => {
@@ -344,12 +355,19 @@ function Messages({ values, msgId }) {
           </div>
 
           <Grid item xs={12} md={12} style={{ paddingTop: "5px" }}>
-            {postImg ? (
-              <img
-                src={postImg}
-                alt="user"
-                style={{ height: "auto", maxHeight: "100%", width: "auto", maxWidth: "100%", borderRadius: "4px" }}
+              <ModalImage 
+                open={openImgModal}
+                handleClose={closeImgModal}
+                postImg={postImg}
               />
+            {postImg ? (
+              <IconButton onClick={() => showImgModal()}>
+                <img
+                  src={postImg}
+                  alt="user"
+                  style={{ height: "auto", maxHeight: "100%", width: "auto", maxWidth: "100%", borderRadius: "4px" }}
+                />
+              </IconButton>
             ) : null}
           </Grid>
 
